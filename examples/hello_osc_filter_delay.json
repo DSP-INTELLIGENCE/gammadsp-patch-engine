@@ -1,0 +1,14 @@
+
+{
+  "format": "gamma-patch",
+  "version": 1,
+  "nodes": [
+    { "id": "in",  "type": "input" },
+    { "id": "osc", "type": "gamma.sine", "params": { "amp": 0.2, "freqFromInput": 1.0 } }
+  ],
+  "connections": [
+    { "from": "in.frequency", "to": "osc.freq" },
+    { "from": "osc.out", "to": "output.left" },
+    { "from": "osc.out", "to": "output.right" }
+  ]
+}

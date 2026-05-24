@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# SWIG/generated build outputs
+GammaDSP.py
+GammaDSP_wrap.cxx
+_GammaDSP
+_GammaDSP*.so
+
+# Python envs
+.venv/
+.env/
+
+# local audio/output artifacts
+*.wav
+*.aiff
+*.aif
+*.flac
+*.mp3
