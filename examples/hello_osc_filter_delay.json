@@ -1,14 +1,43 @@
-
 {
-  "format": "gamma-patch",
-  "version": 1,
+  "sample_rate": 48000,
+  "duration": 0.25,
   "nodes": [
-    { "id": "in",  "type": "input" },
-    { "id": "osc", "type": "gamma.sine", "params": { "amp": 0.2, "freqFromInput": 1.0 } }
+    {
+      "id": "osc",
+      "type": "Saw",
+      "ctor_args": [
+        55,
+        0.0
+      ]
+    },
+    {
+      "id": "lp",
+      "type": "LowPassFilter",
+      "params": {
+        "freq": 900,
+        "res": 1.2
+      }
+    },
+    {
+      "id": "delay",
+      "type": "ModDelay",
+      "ctor_args": [
+        2.0,
+        0.33
+      ],
+      "params": {
+        "feedback": 0.35,
+        "mix": 0.3
+      }
+    }
   ],
-  "connections": [
-    { "from": "in.frequency", "to": "osc.freq" },
-    { "from": "osc.out", "to": "output.left" },
-    { "from": "osc.out", "to": "output.right" }
-  ]
+  "chain": {
+    "name": "main",
+    "nodes": [
+      "osc",
+      "lp",
+      "delay"
+    ]
+  },
+  "out": "main"
 }
