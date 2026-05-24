@@ -34,3 +34,6 @@ _GammaDSP*.so
 *.dylib
 *.dll
 *.gch
+
+# local patch/test output
+patches/
