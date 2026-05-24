@@ -18,3 +18,11 @@ _GammaDSP*.so
 *.aif
 *.flac
 *.mp3
+
+# C/C++ build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.gch
