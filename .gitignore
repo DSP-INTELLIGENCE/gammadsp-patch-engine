@@ -26,3 +26,11 @@ _GammaDSP*.so
 *.dylib
 *.dll
 *.gch
+
+# C/C++ build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.gch
