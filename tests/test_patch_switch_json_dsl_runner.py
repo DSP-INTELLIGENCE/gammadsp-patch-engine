@@ -54,13 +54,13 @@ def test_json_process() -> None:
             "--out",
             str(out),
         )
-    assert payload["ok"] is True
-    assert payload["format"] == "json"
-    assert payload["input_frames"] == 128
-    assert payload["frames"] == 128
-    assert payload["finite"] is True
-    assert out.exists()
-    assert out.stat().st_size > 44
+        assert payload["ok"] is True
+        assert payload["format"] == "json"
+        assert payload["input_frames"] == 128
+        assert payload["frames"] == 128
+        assert payload["finite"] is True
+        assert out.exists()
+        assert out.stat().st_size > 44
 
 
 def test_dsl_inspect() -> None:
@@ -84,13 +84,13 @@ def test_dsl_render() -> None:
             "--out",
             str(out),
         )
-    assert payload["ok"] is True
-    assert payload["format"] == "dsl"
-    assert payload["frames"] > 0
-    assert payload["finite"] is True
-    assert payload["peak"] > 1e-6
-    assert out.exists()
-    assert out.stat().st_size > 44
+        assert payload["ok"] is True
+        assert payload["format"] == "dsl"
+        assert payload["frames"] > 0
+        assert payload["finite"] is True
+        assert payload["peak"] > 1e-6
+        assert out.exists()
+        assert out.stat().st_size > 44
 
 
 def test_dsl_process() -> None:
@@ -104,13 +104,13 @@ def test_dsl_process() -> None:
             "--out",
             str(out),
         )
-    assert payload["ok"] is True
-    assert payload["format"] == "dsl"
-    assert payload["input_frames"] == 128
-    assert payload["frames"] == 128
-    assert payload["finite"] is True
-    assert out.exists()
-    assert out.stat().st_size > 44
+        assert payload["ok"] is True
+        assert payload["format"] == "dsl"
+        assert payload["input_frames"] == 128
+        assert payload["frames"] == 128
+        assert payload["finite"] is True
+        assert out.exists()
+        assert out.stat().st_size > 44
 
 
 def test_switch_aliases() -> None:

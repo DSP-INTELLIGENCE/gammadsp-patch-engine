@@ -24,10 +24,7 @@
     },
     {
       "id": "clip",
-      "type": "SoftClip",
-      "params": {
-        "level": 0.9
-      }
+      "type": "SoftClip"
     }
   ],
   "graph": {
