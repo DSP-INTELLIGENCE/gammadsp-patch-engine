@@ -1,96 +1,151 @@
 # gammadsp-patch-engine
 
-Minimal, CLI-switchable GammaDSP PatchEngine runtime.
+Minimal GammaDSP PatchEngine runtime extracted from the larger GammaDSP workbench repository.
 
-This repository is intended to be the small extracted home for the working GammaDSP PatchEngine layer. The full `GammaDSP` repository remains the workbench/research repository. This repo should contain only the source, wrappers, runtime modules, tests, examples, and docs needed to build and operate the PatchEngine through machine-friendly commands.
+This repo is the small, machine-checkable home for the working PatchEngine layer: SWIG-backed GammaDSP classes, reflective node construction, JSON/DSL patch documents, automation lanes, examples, tests, and a thin CLI runner.
 
-## Core idea
+## Current architecture
 
 ```text
 GammaDSP C++ / SWIG backend
-  -> GammaDSP.py / _GammaDSP.so
+  -> GammaDSP.py / _GammaDSP*.so
   -> swig_introspect.py
   -> patch_engine.py
   -> patch_json.py / patch_dsl.py
   -> patch_switch.py
-  -> CLI /switch interface
+  -> scripts, agents, tests, and data workflows
 ```
 
-The PatchEngine must be fully usable from command-line switches. Python can remain the implementation backend, but users, agents, scripts, and ML/data pipelines should not need to call internal Python APIs directly.
+The CLI is a runner, not a patch language. JSON and DSL are the authored patch formats. The PatchEngine remains reflective internally: it resolves live SWIG classes, constructs objects from `ctor_args`, applies setter-backed `params`, builds graphs/chains, and renders or processes audio buffers.
 
-## Essential runtime boundary
+## What a patch is
 
-A file belongs in this repo only if it is required to do one of these:
+A GammaDSP patch is a declarative audio document with:
 
-1. Build `_GammaDSP` from source.
-2. Import `GammaDSP` successfully.
-3. Resolve GammaDSP SWIG classes dynamically.
-4. Create DSP nodes with `ctor_args` and setter `params`.
-5. Build/render `FunctionGraph` or `DSPGraph` patches.
-6. Load/save/validate JSON patch files.
-7. Run the current machine-checkable tests.
-8. Expose the PatchEngine through CLI switches.
+1. identity and metadata,
+2. an input/output contract,
+3. reflective GammaDSP nodes,
+4. graph or chain topology,
+5. public controls,
+6. optional automation lanes.
 
-Everything else should stay in the larger GammaDSP workbench repo until a failing build or test proves it is needed here.
+Two patch modes are currently first-class:
 
-## Current source checkpoint
-
-This extraction should begin from the known-good GammaDSP branch/tag:
-
-```bash
-git checkout audit/json-introspection-01
-git tag --list 'checkpoint-legacy-runner-json-introspection-pass'
+```text
+generator patch  -> render()  -> output audio
+processor patch  -> process(input_buffer) -> output audio
 ```
 
-That checkpoint has confirmed:
+Use `render` for generator-backed patches such as oscillators. Use `process` for external-input FX patches. Do not model external input as a fake SWIG node; use graph input names such as `input` in topology.
 
-- root `GammaDSP.py` imports the root `_GammaDSP*.so`
-- `runGenerator`, `runFunction`, `FunctionGraph`, and `DSPGraph` are available
-- SWIG introspection tests pass
-- JSON PatchEngine tests pass
-- legacy demo scripts can be run through a repo-root runner
+## Current truth gates
 
-## First build/test loop
-
-After copying the minimal source set into this repo:
+Run these from the repo root after building `_GammaDSP`:
 
 ```bash
-sh GammaDSP.sh
+source ~/dsp/bin/activate
+PYTHON=python sh GammaDSP.sh
+
 PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_current_swig_smoke.py
 PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_introspection.py
 PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_patch_json_introspection.py
+PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_patch_switch_cli.py
+PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_patch_switch_json_dsl_runner.py
 ```
 
-If the build fails, copy only the missing include or interface file named by the compiler/SWIG error. Do not bulk-copy the whole old repository.
+Passing state as of the current planning baseline:
 
-## Repository docs
+- SWIG smoke gate passes.
+- SWIG introspection PatchEngine gate passes.
+- JSON PatchEngine gate passes.
+- Patch switch CLI gate passes.
+- JSON/DSL runner gate passes.
 
-- `docs/PATCH_ENGINE_BOUNDARY.md` defines what belongs here.
-- `docs/ESSENTIAL_FILES.md` lists the first-copy candidate set.
-- `docs/BUILD.md` explains the SWIG/backend build loop.
-- `docs/TESTS.md` defines truth gates versus human demo scripts.
-- `docs/CLI_SWITCH_GOAL.md` defines the `/switch` target.
-- `docs/EXTRACTION_PLAN.md` gives the first manual copy sequence.
-- `docs/ROADMAP.md` defines next branches.
-
-## Non-goals
-
-This repo should not inherit the old overlay/registry/factory stack as the primary runtime. Avoid copying these unless explicitly needed for archived reference or a later migration branch:
+## Repository map
 
 ```text
-dynamic_factory.py
-dynamic_registry.py
-dynamic_patch_engine.py
-dynamic_patch_dsl.py
-factory.py
-metadata.py
-registry.py
-registry_autogen.py
-module_overlays.py
-validate_registry.py
-generate_metadata.py
-Scripts/
-Tests/
+GammaDSP.cpp / GammaDSP.hpp / GammaDSP.i / GammaDSP.sh
+  SWIG backend source and build script.
+
+swig_introspect.py
+  Reflective class discovery, constructor dispatch, setter mapping, and capability inspection.
+
+patch_engine.py
+  Runtime PatchEngine: nodes, params, chains, graphs, render/process paths, runtime contract.
+
+patch_json.py
+  JSON patch loader/saver and LoadedJSONPatch render/process wrapper.
+
+patch_dsl.py
+  Compact authoring layer for patch documents.
+
+automation.py
+  Block-rate automation lanes used by render/process paths.
+
+patch_switch.py
+  Thin CLI runner for JSON/DSL patch documents.
+
+docs/
+  Architecture, roadmap, milestones, handoff prompts, and agent instructions.
+
+examples/
+  Small generator and processor patch fixtures.
+
+tests/
+  Machine-checkable runtime and runner gates.
 ```
 
-The new runtime should stay small, inspectable, and CLI-switchable.
+## Working rules
+
+- Keep JSON and DSL as the patch languages.
+- Keep `patch_switch.py` thin: operation + files + output format.
+- Do not duplicate PatchEngine logic in CLI code.
+- Do not invent hardcoded DSP commands for things the engine can express through JSON/DSL.
+- Do not add generated outputs to git: `_GammaDSP*.so`, `GammaDSP.py`, `GammaDSP_wrap.cxx`, `*.gch`, audio files, or caches.
+- Add files only when a build, runtime path, test, or documented design goal proves they belong in this repo.
+- Package repo changes as patch ZIPs with staged scripts.
+
+## Patch package workflow
+
+Patch ZIPs should include:
+
+```text
+<patch-name>.patch
+changed-files.txt
+README.md
+apply_patch.sh
+scripts/
+  00_install.sh
+  01_apply.sh
+  02_test.sh
+  03_verify.sh
+  04_commit.sh
+  05_push.sh
+  06_pr.sh
+  07_merge.sh
+```
+
+Use chained commands only when the final command does not end with a dangling `&&` or trailing backslash.
+
+## Current checkpoints
+
+Known checkpoint tags:
+
+```text
+checkpoint-minimal-patch-engine-json-pass
+checkpoint-patch-switch-cli-render-01
+checkpoint-json-dsl-runner-process-01
+```
+
+The current planning direction is documented in:
+
+- `docs/MEMORY.md`
+- `docs/MILESTONES.md`
+- `docs/ROADMAP.md`
+- `docs/PATCH_DESIGN_GUIDE.md`
+- `docs/CHATGPT_HANDOFF.md`
+- `AGENTS.md`
+
+## Near-term goal
+
+Design patches as reusable audio behaviors, not raw SWIG call logs. The next work should strengthen patch authoring conventions: metadata, I/O contracts, controls, automation, examples, and schema checks.

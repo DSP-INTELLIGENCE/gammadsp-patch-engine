@@ -1,128 +1,79 @@
 # Roadmap
 
-## Phase 0: Documentation baseline
+This roadmap is the planning source for humans, ChatGPT, and future Codex runs. Checked items are already completed or represented by the current repository state. Unchecked items are the next planned branches.
 
-Goal: make the new repo understandable before copying source.
+## Phase 0: extraction baseline
 
-Files:
+- [x] Create `gammadsp-patch-engine` as a smaller extracted repo.
+- [x] Add initial README and extraction docs.
+- [x] Copy the minimal PatchEngine runtime source.
+- [x] Build `_GammaDSP` from source with active Python and NumPy headers.
+- [x] Remove generated/precompiled header artifacts from git.
+- [x] Add `automation.py` as a required JSON PatchEngine dependency.
+- [x] Ignore local patch/test output directories.
+- [x] Tag `checkpoint-minimal-patch-engine-json-pass`.
 
-```text
-README.md
-docs/PATCH_ENGINE_BOUNDARY.md
-docs/ESSENTIAL_FILES.md
-docs/BUILD.md
-docs/TESTS.md
-docs/CLI_SWITCH_GOAL.md
-docs/EXTRACTION_PLAN.md
-docs/ROADMAP.md
-```
+## Phase 1: current runtime gates
 
-Definition of done:
+- [x] `tests/test_current_swig_smoke.py` passes.
+- [x] `tests/test_introspection.py` passes.
+- [x] `tests/test_patch_json_introspection.py` passes.
+- [x] SWIG classes resolve reflectively through `swig_introspect.py`.
+- [x] JSON patch load/render/process paths work.
+- [x] FunctionGraph and external-input graph paths work.
 
-- docs are committed to `main`
-- repo purpose is clear
-- essential/non-essential file boundary is explicit
+## Phase 2: CLI runner baseline
 
-## Phase 1: Minimal runtime extraction
+- [x] Add `patch_switch.py` with status/classes/describe/validate/render.
+- [x] Add `tests/test_patch_switch_cli.py`.
+- [x] Keep CLI as runner, not a third patch language.
+- [x] Update example patch to use a generator-backed render path.
+- [x] Tag `checkpoint-patch-switch-cli-render-01`.
 
-Goal: copy only enough files to build `_GammaDSP` and run the current machine-checkable tests.
+## Phase 3: JSON/DSL runner baseline
 
-Branch suggestion:
+- [x] Refine `patch_switch.py` around JSON/DSL patch documents.
+- [x] Add JSON and DSL examples for generator and processor patch modes.
+- [x] Add `process` support with caller-supplied input JSON buffers.
+- [x] Fix processor examples to use only supported SWIG setters.
+- [x] Fix tests to check temp output files before temp dirs are deleted.
+- [x] Tag `checkpoint-json-dsl-runner-process-01`.
 
-```text
-extract/minimal-patch-engine-runtime-01
-```
+## Phase 4: patch design language
 
-Definition of done:
+- [ ] Add a formal patch authoring guide.
+- [ ] Define patch metadata conventions: `version`, `name`, `description`, `author`, `tags`.
+- [ ] Define I/O contracts: `io.mode = generator|processor|analysis|utility`.
+- [ ] Define controls as a public patch interface separate from raw node params.
+- [ ] Define automation conventions for node params and future control-level automation.
+- [ ] Add schema-lite validation tests for examples.
+- [ ] Add more canonical patch examples: generator, processor, parallel graph, automation sweep.
 
-```bash
-sh GammaDSP.sh
-PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_current_swig_smoke.py
-PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_introspection.py
-PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" python tests/test_patch_json_introspection.py
-```
-
-## Phase 2: CLI switch surface
-
-Goal: expose the PatchEngine through command-line switches.
-
-Branch suggestion:
-
-```text
-feature/patch-switch-cli-01
-```
-
-Files:
+Suggested branch:
 
 ```text
-patch_switch.py
-tests/test_patch_switch_cli.py
-docs/CLI_SWITCH_REFERENCE.md
+feature/patch-design-guide-01
 ```
 
-First commands:
+## Phase 5: patch library and datasets
 
-```bash
-python patch_switch.py status --json
-python patch_switch.py list-classes --json
-python patch_switch.py describe-class LowPassFilter --json
-python patch_switch.py validate-json examples/hello_osc_filter_delay.json --json
-python patch_switch.py render-json examples/hello_osc_filter_delay.json --seconds 0.25 --out /tmp/gammadsp-test.wav --json
-```
+- [ ] Create a curated `examples/library/` or `patches/library/` folder.
+- [ ] Add deterministic render/process batch commands if needed.
+- [ ] Add JSONL manifest generation for ML/data workflows.
+- [ ] Add dataset-safe outputs with explicit paths and no playback/GUI assumptions.
+- [ ] Add regression signatures for example audio summaries.
 
-## Phase 3: Examples and JSON patch catalog
+## Phase 6: Codex-ready operations
 
-Goal: provide small reproducible patches for scripts and ML pipelines.
+- [x] Add staged patch ZIP workflow.
+- [ ] Add `AGENTS.md` with contributor and agent rules.
+- [ ] Add ChatGPT handoff prompts.
+- [ ] Add Codex handoff prompts and branch templates.
+- [ ] Add CI or a local `scripts/run_all_gates.sh` wrapper.
+- [ ] Add issue/PR templates if the repo starts using GitHub Issues.
 
-Files:
+## Phase 7: optional UI/demo layer
 
-```text
-examples/hello_osc_filter_delay.json
-examples/external_input_fx.json
-examples/parallel_filter_graph.json
-examples/chain_materialized_as_graph.json
-```
-
-Definition of done:
-
-- every example validates through CLI
-- every example can render non-interactively
-- no audio playback required
-
-## Phase 4: ML-friendly render/data commands
-
-Goal: generate deterministic patch outputs for ML/data workflows.
-
-Possible commands:
-
-```bash
-python patch_switch.py render-json examples/hello_osc_filter_delay.json --seconds 1 --out out.wav --json
-python patch_switch.py render-batch examples/*.json --seconds 1 --out-dir /tmp/gammadsp-renders --manifest /tmp/manifest.jsonl
-python patch_switch.py inspect-audio /tmp/gammadsp-renders/out.wav --json
-```
-
-Rules:
-
-- no graph windows
-- no audio playback
-- deterministic frame counts
-- JSON/JSONL manifests
-- all generated data goes to explicit output paths
-
-## Phase 5: Optional legacy demo migration
-
-Goal: keep human audio/graph demos available without confusing them with CI tests.
-
-Possible structure:
-
-```text
-demos/audio/
-demos/graphs/
-demos/legacy/
-```
-
-Rules:
-
-- demos may play audio or show graphs
-- tests should not
-- demos should document required local devices/packages
+- [ ] Keep old human audio/graph demos separate from tests.
+- [ ] Add demo docs only after the machine-checkable layer is stable.
+- [ ] Avoid audio-device or graph-window requirements in tests.
