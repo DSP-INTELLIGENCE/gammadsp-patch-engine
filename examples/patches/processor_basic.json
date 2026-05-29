@@ -1,0 +1,70 @@
+{
+  "schema": "gammadsp.patch.v0",
+  "name": "Processor Basic",
+  "description": "A processor patch that filters, clips, and delays an external input buffer.",
+  "tags": ["processor", "effect", "filter", "delay", "distortion"],
+  "sample_rate": 48000,
+  "duration": 0.25,
+  "io": {
+    "mode": "processor",
+    "inputs": ["input"],
+    "outputs": ["fx"]
+  },
+  "nodes": [
+    {
+      "id": "lp",
+      "type": "LowPassFilter",
+      "params": {
+        "freq": 800,
+        "res": 0.707
+      }
+    },
+    {
+      "id": "clip",
+      "type": "SoftClip"
+    },
+    {
+      "id": "delay",
+      "type": "ModDelay",
+      "ctor_args": [2.0, 0.25],
+      "params": {
+        "feedback": 0.2,
+        "mix": 0.25
+      }
+    }
+  ],
+  "graph": {
+    "name": "fx",
+    "connections": [
+      ["input", "lp"],
+      ["lp", "clip"],
+      ["clip", "delay"]
+    ],
+    "outputs": [["delay", 1.0]]
+  },
+  "out": "fx",
+  "controls": [
+    {
+      "name": "tone",
+      "label": "Tone",
+      "type": "float",
+      "default": 800,
+      "min": 80,
+      "max": 8000,
+      "targets": [
+        {"node": "lp", "param": "freq", "scale": "exp"}
+      ]
+    },
+    {
+      "name": "mix",
+      "label": "Delay Mix",
+      "type": "float",
+      "default": 0.25,
+      "min": 0.0,
+      "max": 1.0,
+      "targets": [
+        {"node": "delay", "param": "mix"}
+      ]
+    }
+  ]
+}

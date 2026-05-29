@@ -1,0 +1,66 @@
+{
+  "schema": "gammadsp.patch.v0",
+  "name": "Automated Filter Sweep",
+  "description": "A generator patch with a low-pass cutoff sweep driven by block-rate automation.",
+  "tags": ["generator", "automation", "filter", "sweep"],
+  "sample_rate": 48000,
+  "duration": 0.25,
+  "io": {
+    "mode": "generator",
+    "inputs": [],
+    "outputs": ["main"]
+  },
+  "nodes": [
+    {
+      "id": "osc",
+      "type": "Saw",
+      "ctor_args": [90, 0.0]
+    },
+    {
+      "id": "lp",
+      "type": "LowPassFilter",
+      "params": {
+        "freq": 250,
+        "res": 0.707
+      }
+    },
+    {
+      "id": "clip",
+      "type": "SoftClip"
+    }
+  ],
+  "graph": {
+    "name": "main",
+    "connections": [
+      ["osc", "lp"],
+      ["lp", "clip"]
+    ],
+    "outputs": [["clip", 1.0]]
+  },
+  "out": "main",
+  "controls": [
+    {
+      "name": "sweep_cutoff",
+      "label": "Sweep Cutoff",
+      "type": "float",
+      "default": 250,
+      "min": 120,
+      "max": 4000,
+      "targets": [
+        {"node": "lp", "param": "freq", "scale": "exp"}
+      ]
+    }
+  ],
+  "automation": [
+    {
+      "node": "lp",
+      "param": "freq",
+      "type": "linear",
+      "points": [
+        [0.0, 250],
+        [0.125, 1800],
+        [0.25, 500]
+      ]
+    }
+  ]
+}

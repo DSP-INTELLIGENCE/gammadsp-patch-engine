@@ -1,0 +1,66 @@
+{
+  "schema": "gammadsp.patch.v0",
+  "name": "Generator Basic",
+  "description": "A simple saw oscillator through a low-pass filter and modulated delay.",
+  "tags": ["generator", "oscillator", "filter", "delay"],
+  "sample_rate": 48000,
+  "duration": 0.25,
+  "io": {
+    "mode": "generator",
+    "inputs": [],
+    "outputs": ["main"]
+  },
+  "nodes": [
+    {
+      "id": "osc",
+      "type": "Saw",
+      "ctor_args": [55, 0.0]
+    },
+    {
+      "id": "lp",
+      "type": "LowPassFilter",
+      "params": {
+        "freq": 900,
+        "res": 1.2
+      }
+    },
+    {
+      "id": "delay",
+      "type": "ModDelay",
+      "ctor_args": [2.0, 0.33],
+      "params": {
+        "feedback": 0.35,
+        "mix": 0.3
+      }
+    }
+  ],
+  "chain": {
+    "name": "main",
+    "nodes": ["osc", "lp", "delay"]
+  },
+  "out": "main",
+  "controls": [
+    {
+      "name": "tone",
+      "label": "Tone",
+      "type": "float",
+      "default": 900,
+      "min": 80,
+      "max": 8000,
+      "targets": [
+        {"node": "lp", "param": "freq", "scale": "exp"}
+      ]
+    },
+    {
+      "name": "delay_feedback",
+      "label": "Delay Feedback",
+      "type": "float",
+      "default": 0.35,
+      "min": 0.0,
+      "max": 0.95,
+      "targets": [
+        {"node": "delay", "param": "feedback"}
+      ]
+    }
+  ]
+}
